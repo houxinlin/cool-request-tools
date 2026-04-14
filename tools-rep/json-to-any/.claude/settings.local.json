@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jar tf:*)",
+      "Bash(grep -v \"/$\")",
+      "Bash(mkdir -p /d/HXL/project/self/coolrequest-tools/tools-rep/json-to-any/src/main/java/com/coolrequest/tool/jsontoany)",
+      "Bash(mkdir -p /d/HXL/project/self/coolrequest-tools/tools-rep/json-to-any/src/main/resources)",
+      "Bash(./gradlew fatJar:*)",
+      "Bash(grep -E \"coolrequest|tool|json|logo|\\\\.tool$|\\\\.name$\")",
+      "Bash(grep -E \"FileType.class$\")",
+      "Bash(xargs '-I{}' bash -c 'r=$\\(jar tf \"{}\" 2>/dev/null | grep -i \"sql\"\\); [ -n \"$r\" ] && echo \"=== {} ===\" && echo \"$r\"')",
+      "Bash(grep \"getFileTypeByExtension\\\\|findFileTypeByName\\\\|getInstance\" javap -p com/intellij/openapi/editor/EditorFactory.class)",
+      "Bash(grep \"INSTANCE\\\\|getInstance\\\\|YML\" javap -p org/intellij/plugins/markdown/lang/MarkdownFileType.class)",
+      "Read(//tmp/**)",
+      "Bash(jar xf:*)",
+      "Bash(javap -p com/intellij/ide/highlighter/HtmlFileType.class)",
+      "Bash(javap -p com/intellij/ide/highlighter/XmlFileType.class)",
+      "Bash(javap -p com/intellij/json/JsonFileType.class)",
+      "Bash(javap -p com/intellij/openapi/fileTypes/PlainTextFileType.class)",
+      "Bash(IDEA_LIB=\"/c/Users/H/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2024.1/181fa36f74690e64a81a8e06ceda9480d2a6c626/ideaIC-2024.1/lib\" cd /tmp/etf javap -p com/intellij/openapi/ui/Splitter.class)",
+      "Bash(IDEA_LIB=\"/c/Users/H/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2024.1/181fa36f74690e64a81a8e06ceda9480d2a6c626/ideaIC-2024.1/lib\" cd /tmp/etf)",
+      "Bash(javap -p com/intellij/ui/EditorSettingsProvider.class)"
+    ]
+  }
+}
