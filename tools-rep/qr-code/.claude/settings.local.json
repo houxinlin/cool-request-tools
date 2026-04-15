@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew shadowJar)",
+      "Read(//d/tmp/**)",
+      "Bash(jar xf:*)",
+      "Bash(javap -c -private \"/tmp/dev/coolrequest/tool/CoolToolPanel.class\")",
+      "Bash(javap -c -private \"/tmp/dev/coolrequest/tool/ToolPanelFactory.class\")",
+      "Bash(jar tf:*)",
+      "Bash(grep -E \"\\\\.class$\")",
+      "Bash(javap -classpath D:/project/coolrequest-vip/sub-projects/coolrequest-tools/build/libs/coolrequest-tool-1.0-SNAPSHOT.jar dev.coolrequest.tool.ToolPanelFactory)",
+      "Bash(javap -classpath D:/project/coolrequest-vip/sub-projects/coolrequest-tools/build/libs/coolrequest-tool-1.0-SNAPSHOT.jar dev.coolrequest.tool.CoolToolPanel)",
+      "Bash(./gradlew jar:*)"
+    ]
+  }
+}

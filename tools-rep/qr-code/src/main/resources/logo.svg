@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Background with rounded corners -->
+  <rect width="48" height="48" rx="10" ry="10" fill="#1565C0"/>
+
+  <!-- Top-left finder pattern -->
+  <rect x="6" y="6" width="13" height="13" rx="1.5" fill="white"/>
+  <rect x="8" y="8" width="9" height="9" rx="0.5" fill="#1565C0"/>
+  <rect x="10" y="10" width="5" height="5" fill="white"/>
+
+  <!-- Top-right finder pattern -->
+  <rect x="29" y="6" width="13" height="13" rx="1.5" fill="white"/>
+  <rect x="31" y="8" width="9" height="9" rx="0.5" fill="#1565C0"/>
+  <rect x="33" y="10" width="5" height="5" fill="white"/>
+
+  <!-- Bottom-left finder pattern -->
+  <rect x="6" y="29" width="13" height="13" rx="1.5" fill="white"/>
+  <rect x="8" y="31" width="9" height="9" rx="0.5" fill="#1565C0"/>
+  <rect x="10" y="33" width="5" height="5" fill="white"/>
+
+  <!-- Timing pattern: horizontal (between top finders, y=10) -->
+  <rect x="21" y="10" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="25" y="10" width="3" height="3" rx="0.5" fill="white"/>
+
+  <!-- Timing pattern: vertical (between left finders, x=10) -->
+  <rect x="10" y="21" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="10" y="25" width="3" height="3" rx="0.5" fill="white"/>
+
+  <!-- Data modules: bottom-right area -->
+  <rect x="21" y="21" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="26" y="21" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="31" y="21" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="36" y="21" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="41" y="21" width="3" height="3" rx="0.5" fill="white"/>
+
+  <rect x="21" y="26" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="36" y="26" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="41" y="26" width="3" height="3" rx="0.5" fill="white"/>
+
+  <rect x="21" y="31" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="26" y="31" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="31" y="31" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="36" y="31" width="3" height="3" rx="0.5" fill="white"/>
+
+  <rect x="21" y="36" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="31" y="36" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="41" y="36" width="3" height="3" rx="0.5" fill="white"/>
+
+  <rect x="21" y="41" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="26" y="41" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="36" y="41" width="3" height="3" rx="0.5" fill="white"/>
+  <rect x="41" y="41" width="3" height="3" rx="0.5" fill="white"/>
+</svg>

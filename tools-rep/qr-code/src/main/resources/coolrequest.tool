@@ -1,0 +1,1 @@
+dev.coolrequest.tool.qrcode.QrCodeToolFactory

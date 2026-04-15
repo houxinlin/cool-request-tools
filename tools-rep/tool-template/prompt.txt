@@ -1,0 +1,48 @@
+当前项目是CoolRequest插件中的Tool插件项目，项目已经包含了idea插件开发的依赖，无需通再引入其他关于idea的API，需要你根据Cool Request Tool插件的开发规划，根据用户的需求，完成Tool的开发
+规范如下。
+1. 在\src\main\java\dev\coolrequest\tool包下创建新的名称，符合当前tool的名称
+2. 需要实现Cool Request的页面创建工厂类ToolPanelFactory
+package com.test;
+
+import dev.coolrequest.tool.CoolToolPanel;
+import dev.coolrequest.tool.ToolPanelFactory;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class ToolFactory implements ToolPanelFactory {
+    @Override
+    public CoolToolPanel createToolPanel() {
+        return new CoolToolPanel() {
+            @Override
+            public JPanel createPanel() {
+                return new MainPanel();
+            }
+
+            @Override
+            public void showTool() {
+
+            }
+
+            @Override
+            public void closeTool() {
+
+            }
+        };
+    }
+
+    public static class MainPanel extends JPanel {
+        public MainPanel() {
+            setLayout(new BorderLayout());
+            add(new JLabel("Hello Cool Request",SwingConstants.CENTER), BorderLayout.CENTER);
+        }
+    }
+}
+
+3. 编辑配置文件
+	在resources目录下创建三个文件，coolrequest.tool、logo.svg、tool.name
+
+	coolrequest.tool 保存实现ToolPanelFactory的类，用于告诉Cool Request从此类加载内容
+	logo.svg	小工具图标，只能是svg格式，大小推荐在48*48，你需要自行根据当前的tool生成，需要圆角
+	tool.name 小工具名字
+4. 在开发UI时候，尽量使用IDEA的UI，而不是Swing，以及功能实现时候，尽量使用IDEA的提供的现成类
