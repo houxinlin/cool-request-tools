@@ -1,0 +1,1 @@
+dev.coolrequest.tool.hash.HashToolFactory

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Background rounded square -->
+  <rect x="0" y="0" width="48" height="48" rx="10" ry="10" fill="#4B6EAF"/>
+  <!-- Horizontal bars of # -->
+  <rect x="10" y="17" width="28" height="4" rx="2" fill="white"/>
+  <rect x="10" y="27" width="28" height="4" rx="2" fill="white"/>
+  <!-- Vertical bars of # -->
+  <rect x="16" y="10" width="4" height="28" rx="2" fill="white"/>
+  <rect x="28" y="10" width="4" height="28" rx="2" fill="white"/>
+</svg>
