@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip -l build/libs/template-1.0-SNAPSHOT-all.jar)",
+      "Bash(xxd D:/HXL/project/self/coolrequest-tools/tools-rep/code-statistics/src/main/resources/coolrequest.tool)",
+      "Bash(xxd D:/HXL/project/self/coolrequest-tools/tools-rep/has-text/src/main/resources/coolrequest.tool)",
+      "Bash(xxd D:/HXL/project/self/coolrequest-tools/tools-rep/code-statistics/src/main/resources/tool.name)"
+    ]
+  }
+}
