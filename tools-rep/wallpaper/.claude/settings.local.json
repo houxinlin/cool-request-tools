@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jar tf *)",
+      "Bash(javap -p dev.coolrequest.tool.CoolToolPanel dev.coolrequest.tool.ToolPanelFactory -classpath coolrequest-tool-1.0-SNAPSHOT.jar)",
+      "Bash(javap -p -classpath coolrequest-tool-1.0-SNAPSHOT.jar dev.coolrequest.tool.CoolToolPanel dev.coolrequest.tool.ToolPanelFactory)",
+      "Bash(./gradlew compileJava)",
+      "Bash(xargs -I {} unzip -l {})",
+      "Bash(unzip -l /c/Users/H/.gradle/caches/9.0.0/transforms/34fe94aa9a681f733ca94d5c145414b5/transformed/ideaIU-2024.1-win/lib/app.jar)",
+      "Bash(unzip -p /c/Users/H/.gradle/caches/9.0.0/transforms/34fe94aa9a681f733ca94d5c145414b5/transformed/ideaIU-2024.1-win/lib/app.jar 'com/intellij/icons/AllIcons$Actions.class')"
+    ]
+  }
+}
