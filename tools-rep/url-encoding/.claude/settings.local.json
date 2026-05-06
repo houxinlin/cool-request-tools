@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew compileJava -q)",
+      "Bash(unzip -l build/libs/template-1.0-SNAPSHOT-base.jar)",
+      "Bash(xxd src/main/resources/coolrequest.tool)",
+      "Bash(./gradlew clean *)"
+    ]
+  }
+}
