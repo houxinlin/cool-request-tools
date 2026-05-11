@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//tmp/**)",
+      "Bash(javap -p dev/coolrequest/tool/CoolToolPanel.class)",
+      "Bash(javap -p dev/coolrequest/tool/ToolPanelFactory.class)",
+      "Bash(javap -p com/intellij/openapi/ui/popup/JBPopupFactory.class)",
+      "Bash(javap -p com/intellij/openapi/ui/popup/IPopupChooserBuilder.class)",
+      "Bash(unzip -q \"/c/Users/H/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2024.1/181fa36f74690e64a81a8e06ceda9480d2a6c626/ideaIC-2024.1/lib/app-client.jar\" \"com/intellij/openapi/ui/popup/JBPopup.class\" \"com/intellij/util/Consumer.class\" \"com/intellij/util/Function.class\")",
+      "Bash(javap -p com/intellij/openapi/ui/popup/JBPopup.class)",
+      "Bash(javap -p com/intellij/util/Consumer.class)",
+      "Bash(javap -p com/intellij/ui/components/JBTextArea.class)",
+      "Bash(javap -p com/intellij/ui/components/JBLabel.class)",
+      "Bash(unzip -q \"/c/Users/H/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2024.1/181fa36f74690e64a81a8e06ceda9480d2a6c626/ideaIC-2024.1/lib/util-8.jar\" \"com/intellij/util/Consumer.class\" \"com/intellij/util/Function.class\")",
+      "Bash(javap -p com/intellij/util/Function.class)",
+      "Bash(./gradlew.bat compileJava --no-daemon -q)",
+      "Bash(./gradlew.bat compileJava --no-daemon)",
+      "Bash(./gradlew.bat classes *)",
+      "Bash(javap -p com/intellij/openapi/ui/popup/util/BaseListPopupStep.class)",
+      "Bash(javap -p com/intellij/ui/OnePixelSplitter.class)",
+      "Bash(javap -p com/intellij/ui/JBSplitter.class)",
+      "Bash(javap -p com/intellij/ui/IdeBorderFactory.class)"
+    ]
+  }
+}

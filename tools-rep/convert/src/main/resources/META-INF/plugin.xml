@@ -1,0 +1,16 @@
+<!-- Plugin Configuration File: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>com.coolrequest.tool.converter</id>
+    <name>Cool Request Converter</name>
+    <vendor url="https://www.coolrequest.dev">CoolRequest</vendor>
+    <description><![CDATA[
+        万能转换器 Tool：支持 60+ 种格式互相转换，覆盖编码、哈希、进制、时间、颜色、命名风格、JSON/YAML/XML/CSV、JWT、UUID、摩尔斯码等常用场景。<br>
+        顶部下拉支持搜索，输入即转换，无需点击按钮。
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <resource-bundle>messages.MyMessageBundle</resource-bundle>
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+</idea-plugin>
