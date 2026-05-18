@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect x="2" y="2" width="44" height="44" rx="10" ry="10" fill="#D77310" opacity="0.15"/>
+  <rect x="2" y="2" width="44" height="44" rx="10" ry="10" fill="none" stroke="#D77310" stroke-width="1.5"/>
+  <!-- Rocket body -->
+  <path d="M24 8 C24 8 18 16 18 26 C18 30 20 34 24 36 C28 34 30 30 30 26 C30 16 24 8 24 8Z" fill="#D77310"/>
+  <!-- Rocket window -->
+  <circle cx="24" cy="22" r="3.5" fill="white"/>
+  <!-- Rocket fins -->
+  <path d="M18 28 L13 33 L16 34 L18 31Z" fill="#D77310" opacity="0.8"/>
+  <path d="M30 28 L35 33 L32 34 L30 31Z" fill="#D77310" opacity="0.8"/>
+  <!-- Flame -->
+  <path d="M21 36 Q24 42 27 36 Q24 39 21 36Z" fill="#FF6B35"/>
+  <!-- MQ text -->
+  <text x="24" y="46" font-family="sans-serif" font-size="5" font-weight="bold" fill="#D77310" text-anchor="middle">MQ</text>
+</svg>

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jar tf *)",
+      "Bash(grep -v \"/$\")",
+      "Read(//d/tmp/**)",
+      "Bash(jar xf *)",
+      "Bash(javap -p dev/coolrequest/tool/CoolToolPanel.class dev/coolrequest/tool/ToolPanelFactory.class)",
+      "Bash(dir /s /b D:\\\\HXL\\\\project\\\\self\\\\coolrequest-tools\\\\tools-rep\\\\rocketmq)",
+      "Bash(findstr /v \".git\\\\\\\\\")",
+      "Bash(findstr /v \"build\\\\\\\\\")",
+      "Bash(findstr /v \".gradle\\\\\\\\\")",
+      "Bash(findstr /v \".idea\\\\\\\\\")",
+      "Bash(dir D:HXLprojectselfcoolrequest-toolstools-reprocketmq *)",
+      "WebSearch"
+    ]
+  }
+}
