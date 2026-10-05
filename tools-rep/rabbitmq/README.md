@@ -38,7 +38,7 @@ build-tool.bat
 ```
 
 构建脚本用本机 IDEA 2026.2 的 lib 目录作编译 classpath（自带 JDK25 javac，`--release 17` 输出兼容运行时），
-产物：`build/libs/cool-request-tool-rabbitmq-1.0-SNAPSHOT.jar`。
+产物：`build/libs/cool-request-tool-rabbitmq-1.1.0.jar`。
 
 ## 本地依赖（lib/）
 

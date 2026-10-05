@@ -1,6 +1,6 @@
 @echo off
 rem 轻量构建：编译 src，平铺合并依赖为 fat jar。
-rem 产出 build\libs\cool-request-tool-rabbitmq-1.0-SNAPSHOT.jar
+rem 产出 build\libs\cool-request-tool-rabbitmq-1.1.0.jar
 setlocal
 cd /d "%~dp0"
 
@@ -41,7 +41,7 @@ del /q "%PKG%\dev\coolrequest\tool\ToolPanelFactory.class" 2>nul
 del /q "%PKG%\META-INF\MANIFEST.MF" 2>nul
 
 cd "%PKG%"
-jar cf "..\libs\cool-request-tool-rabbitmq-1.0-SNAPSHOT.jar" .
+jar cf "..\libs\cool-request-tool-rabbitmq-1.1.0.jar" .
 cd ..\..
 echo DONE
 dir build\libs

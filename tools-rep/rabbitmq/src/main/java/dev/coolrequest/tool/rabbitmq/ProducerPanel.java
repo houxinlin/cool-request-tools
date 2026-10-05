@@ -111,13 +111,18 @@ public class ProducerPanel extends JPanel {
                 return editor;
             }
         };
-        bodyEditor.setNewDocumentAndFileType(com.intellij.openapi.fileTypes.PlainTextFileType.INSTANCE, bodyEditor.getDocument());
+        // JSON 高亮对齐主插件：JsonFileType（宿主类加载器可解析，主插件生产环境同款用法）
+        bodyEditor.setNewDocumentAndFileType(com.intellij.json.JsonFileType.INSTANCE, bodyEditor.getDocument());
         bodyEditor.setOneLineMode(false);
         bodyEditor.setPlaceholder("Message body...");
 
         JPanel bodyPanel = new JPanel(new BorderLayout(0, 4));
         bodyPanel.add(bodyEditor, BorderLayout.CENTER);
         JPanel sendPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        JButton formatButton = new JButton("Format");
+        formatButton.setToolTipText("校验并格式化 Body 中的 JSON（非法时报错位置，不改原文）");
+        formatButton.addActionListener(e -> formatBody());
+        sendPanel.add(formatButton);
         sendButton = new JButton("Send");
         sendButton.addActionListener(e -> sendMessage());
         sendPanel.add(sendButton);
@@ -144,8 +149,21 @@ public class ProducerPanel extends JPanel {
         add(splitter, BorderLayout.CENTER);
     }
 
-    private void setupEditorSettings(EditorEx editor, boolean editable) {
-        EditorSettings settings = editor.getSettings();
+    private void formatBody() {
+        String body = bodyEditor.getText();
+        if (!JsonUtil.isJsonLike(body)) {
+            setResultText("Error: Body 不是 JSON（格式化只针对 { 或 [ 开头的内容）。");
+            return;
+        }
+        try {
+            bodyEditor.setText(JsonUtil.prettyPrint(body));
+            setResultText("Format OK（已格式化，内容未变只调排版）。");
+        } catch (IllegalArgumentException ex) {
+            setResultText("Error: JSON 不合法——" + ex.getMessage());
+        }
+    }
+
+    private void setupEditorSettings(EditorEx editor, boolean editable) {        EditorSettings settings = editor.getSettings();
         settings.setLineNumbersShown(true);
         settings.setFoldingOutlineShown(false);
         settings.setAdditionalLinesCount(1);
