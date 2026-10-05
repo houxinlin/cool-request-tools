@@ -70,7 +70,7 @@ public class MessageDetailDialog extends DialogWrapper {
 
         // 无参构造（纯 Swing document）：详情弹窗可能由消费回调链触发，带 project 的重载
         // 构造时经 PsiDocumentManager 同步建 document，EDT 无读权限时硬抛 RuntimeExceptionWithAttachments
-        EditorTextField bodyEditor = new EditorTextField(BodyCodec.decode(body, BodyCodec.MODE_JSON)) {
+        final EditorTextField bodyEditor = new EditorTextField(BodyCodec.decode(body, BodyCodec.MODE_JSON)) {
             @Override
             protected EditorEx createEditor() {
                 EditorEx editor = super.createEditor();
@@ -87,7 +87,7 @@ public class MessageDetailDialog extends DialogWrapper {
                 return editor;
             }
         };
-        bodyEditor.setNewDocumentAndFileType(PlainTextFileType.INSTANCE, bodyEditor.getDocument());
+        bodyEditor.setNewDocumentAndFileType(com.intellij.json.JsonFileType.INSTANCE, bodyEditor.getDocument());
         bodyEditor.setOneLineMode(false);
         bodyEditor.setEnabled(false);
         bodyEditor.setFont(bodyEditor.getFont().deriveFont(14f));
@@ -95,12 +95,33 @@ public class MessageDetailDialog extends DialogWrapper {
         modeCombo.addActionListener(e -> {
             String m = (String) modeCombo.getSelectedItem();
             int mode = "Hex".equals(m) ? BodyCodec.MODE_HEX : BodyCodec.MODE_JSON;
+            // JSON 模式挂平台 JSON 高亮（主插件同款 JsonFileType），Text/Hex 回纯文本
+            if (mode == BodyCodec.MODE_JSON) {
+                bodyEditor.setNewDocumentAndFileType(com.intellij.json.JsonFileType.INSTANCE,
+                        bodyEditor.getDocument());
+            } else {
+                bodyEditor.setNewDocumentAndFileType(PlainTextFileType.INSTANCE,
+                        bodyEditor.getDocument());
+            }
             bodyEditor.setText(BodyCodec.decode(body, mode));
         });
 
         JPanel bodyWrapper = new JPanel(new BorderLayout(0, 4));
         bodyWrapper.add(bodyHeader, BorderLayout.NORTH);
         bodyWrapper.add(bodyEditor, BorderLayout.CENTER);
+
+        JButton formatButton = new JButton("Format");
+        formatButton.setToolTipText("校验并格式化 JSON（非法时报错位置，不改原文）");
+        formatButton.addActionListener(e -> {
+            try {
+                bodyEditor.setText(JsonUtil.prettyPrint(bodyEditor.getText()));
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(getContentPane(), "JSON 不合法：\n" + ex.getMessage(),
+                        "Format", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        bodyHeader.add(formatButton);
+        bodyHeader.add(Box.createHorizontalStrut(8));
 
         JButton copyPayload = new JButton("Copy payload");
         copyPayload.addActionListener(e -> copyToClipboard(bodyEditor.getText()));

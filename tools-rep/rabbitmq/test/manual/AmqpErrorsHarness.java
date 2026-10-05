@@ -127,18 +127,25 @@ public class AmqpErrorsHarness {
             return publishAndCheckReturn(ok, "cr.ui.ex.direct", "uik", null, "ui-direct-ok");
         });
 
-        // 13. AUTO 模式镜像：不声明直接发既有交换机（新默认行为，绝不自动创建、不会 406）
+        // 13. AUTO 模式镜像：不声明直接发既有 durable 交换机（新默认行为，绝不自动创建、不会 406）
+        //     自建自清该 durable 交换机，避免依赖服务端种子（种子被清理后此场景会假失败）
         scenario("AUTO模式: 不声明直接发既有durable交换机", () -> {
             Connection c = RabbitClient.factory(ok).newConnection();
             try {
-                Channel ch = c.createChannel();
+                Channel setup = c.createChannel();
+                setup.exchangeDeclare("cr.ui.ex.autodurable", com.rabbitmq.client.BuiltinExchangeType.DIRECT, true, false, null);
+                setup.close();
+                Channel ch = c.createChannel(); // 新通道：发布链路里没有任何声明动作
                 java.util.List<com.rabbitmq.client.Return> returned = new java.util.concurrent.CopyOnWriteArrayList<>();
                 ch.addReturnListener(returned::add);
-                ch.basicPublish("cr.ui.ex.durable", "no-match-key", true,
+                ch.basicPublish("cr.ui.ex.autodurable", "no-match-key", true,
                         new com.rabbitmq.client.AMQP.BasicProperties.Builder().deliveryMode(2).build(),
                         "ui-auto-direct".getBytes("UTF-8"));
                 Thread.sleep(800);
                 ch.close();
+                Channel cleanup = c.createChannel();
+                cleanup.exchangeDelete("cr.ui.ex.autodurable");
+                cleanup.close();
                 // 该交换机无绑定, 无论退回与否, 都证明 406 未发生(没有声明动作)
                 return "OK: 发送链路无声明动作, 406 不可能发生 (退回数=" + returned.size() + " 属正常路由语义)";
             } finally {
@@ -160,19 +167,220 @@ public class AmqpErrorsHarness {
             }
         });
 
+        // ===== Ack 确认链路（镜像 ConsumerPanel 手动/自动确认逻辑）=====
+        final String ackQueue = "cr.ui.q.ack";
+        scenario("手动Ack: basicAck 后消息不再回到队列", () -> {
+            try (Ctx ctx = Ctx.open(ok, ackQueue, 3)) {
+                long tag = ctx.consumeOne(false, 1);   // QoS=1：1 条在途 + 2 条 ready
+                int inFlight = ctx.ready();
+                ctx.ch.basicAck(tag, false);
+                ctx.cycleChannel();                     // 关通道强制回投未确认消息，再读即时深度
+                return "在途时 ready=" + inFlight + "(预期 2) → ack 后关通道重读 ready="
+                        + ctx.ready() + "(预期 2：被 ack 的那条不再回来)";
+            }
+        });
+        scenario("手动未Ack对照: 关通道后消息回队列(不丢)", () -> {
+            try (Ctx ctx = Ctx.open(ok, ackQueue, 3)) {
+                ctx.consumeOne(false, 1);               // 收下但不 ack（旧版行为）
+                ctx.cycleChannel();
+                return "关通道重读 ready=" + ctx.ready() + "(预期 3：未确认消息由 broker 全部重投)";
+            }
+        });
+        scenario("手动Requeue: basicNack(requeue=true) 消息回队列", () -> {
+            try (Ctx ctx = Ctx.open(ok, ackQueue, 1)) {
+                long tag = ctx.consumeOne(false, 1);
+                int inFlight = ctx.ready();
+                ctx.ch.basicNack(tag, false, true);
+                Thread.sleep(500);
+                int back = ctx.ready();
+                boolean redelivered = ctx.consumeOneRedelivered(false);
+                return "在途时 ready=" + inFlight + "(预期 0) → requeue 后 ready=" + back
+                        + "(预期 1 回到队列) 再投 redelivered=" + redelivered + "(预期 true)";
+            }
+        });
+        scenario("手动Reject: basicNack(requeue=false) 消息丢弃", () -> {
+            try (Ctx ctx = Ctx.open(ok, ackQueue, 1)) {
+                long tag = ctx.consumeOne(false, 1);
+                ctx.ch.basicNack(tag, false, false);
+                Thread.sleep(500);
+                return "ready=" + ctx.ready() + " (预期 0，消息已丢弃不回队列)";
+            }
+        });
+        scenario("Auto ack: 订阅即确认(队列清空)", () -> {
+            try (Ctx ctx = Ctx.open(ok, ackQueue, 2)) {
+                boolean got = ctx.consumeAll(true, 2);
+                Thread.sleep(500);
+                return "收齐=" + got + " ready=" + ctx.ready() + " (预期 true + 0)";
+            }
+        });
+        scenario("Prefetch 语义: 未确认达上限则停投(旧版无 ack 入口时的卡住现象)", () -> {
+            try (Ctx ctx = Ctx.open(ok, ackQueue, 15)) {
+                int consumed = ctx.consumeCount(false, 10, 1500); // QoS=10：broker 最多在途 10 条
+                int left = ctx.ready();
+                return "投 15 条 QoS=10 消费到 " + consumed + " 条后停投, ready 剩 " + left
+                        + " (预期 consumed=10 left=5；确认一条即可续投)";
+            }
+        });
+
         System.out.println("\n==== 全部场景执行完毕 ====");
+        // amqp 消费线程池非 daemon 会挂住 JVM（曾因占用产物 jar 导致后续构建报 Device or resource busy）
+        System.exit(0);
     }
 
-    /** 镜像 ProducerPanel 新发送逻辑：mandatory=true + ReturnListener + 800ms 等待。 */
+    /**
+     * Ack 场景上下文：自建/自清测试队列 cr.ui.q.ack（用完即删，不留服务端残留），
+     * 提供 ready / unacked 深度读数（经管理 API）与镜像面板的消费入口。
+     */
+    private static final class Ctx implements AutoCloseable {
+        final Connection c;
+        Channel ch;
+        final String queue;
+        final int baseline;
+        final String host;
+        final String vhost;
+        final String user;
+        final String pass;
+
+        private Ctx(Connection c, Channel ch, String queue, int baseline,
+                    String host, String vhost, String user, String pass) {
+            this.c = c;
+            this.ch = ch;
+            this.queue = queue;
+            this.baseline = baseline;
+            this.host = host;
+            this.vhost = vhost;
+            this.user = user;
+            this.pass = pass;
+        }
+
+        static Ctx open(RabbitConnection conn, String queue, int publishCount) throws Exception {
+            Connection c = RabbitClient.factory(conn).newConnection();
+            Channel ch = c.createChannel();
+            ch.queueDeclare(queue, true, false, false, null);
+            ch.queuePurge(queue);
+            for (int i = 0; i < publishCount; i++) {
+                ch.basicPublish("", queue, null, ("ack-check-" + i).getBytes("UTF-8"));
+            }
+            Thread.sleep(300);
+            return new Ctx(c, ch, queue, publishCount, conn.host, conn.vhost, conn.username, conn.password);
+        }
+
+        /** 消费一条并返回 delivery tag（QoS=1 保证在途仅一条，镜像面板 Prefetch 语义）。 */
+        long consumeOne(boolean autoAck, int prefetch) throws Exception {
+            if (prefetch > 0) {
+                ch.basicQos(prefetch);
+            }
+            final long[] got = {-1};
+            final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+            String tag = ch.basicConsume(queue, autoAck, "harness-ack-" + System.currentTimeMillis(),
+                    false, false, null, new com.rabbitmq.client.DefaultConsumer(ch) {
+                        @Override
+                        public void handleDelivery(String t, com.rabbitmq.client.Envelope e,
+                                                   com.rabbitmq.client.AMQP.BasicProperties p, byte[] b) {
+                            got[0] = e.getDeliveryTag();
+                            latch.countDown();
+                        }
+                    });
+            latch.await(5, java.util.concurrent.TimeUnit.SECONDS);
+            ch.basicCancel(tag);
+            Thread.sleep(200);
+            return got[0];
+        }
+
+        /** 再收一条并返回其是否被标记 redeliver（用于验证 requeue 语义）。 */
+        boolean consumeOneRedelivered(boolean autoAck) throws Exception {
+            final boolean[] redelivered = {false};
+            final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+            String tag = ch.basicConsume(queue, autoAck, "harness-redel-" + System.currentTimeMillis(),
+                    false, false, null, new com.rabbitmq.client.DefaultConsumer(ch) {
+                        @Override
+                        public void handleDelivery(String t, com.rabbitmq.client.Envelope e,
+                                                   com.rabbitmq.client.AMQP.BasicProperties p, byte[] b) {
+                            redelivered[0] = e.isRedeliver();
+                            latch.countDown();
+                        }
+                    });
+            latch.await(5, java.util.concurrent.TimeUnit.SECONDS);
+            ch.basicCancel(tag);
+            Thread.sleep(200);
+            return redelivered[0];
+        }
+
+        /** 自动确认消费 count 条，返回是否收齐。 */
+        boolean consumeAll(boolean autoAck, int count) throws Exception {
+            java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(count);
+            String tag = ch.basicConsume(queue, autoAck, "harness-all-" + System.currentTimeMillis(),
+                    false, false, null, new com.rabbitmq.client.DefaultConsumer(ch) {
+                        @Override
+                        public void handleDelivery(String t, com.rabbitmq.client.Envelope e,
+                                                   com.rabbitmq.client.AMQP.BasicProperties p, byte[] b) {
+                            latch.countDown();
+                        }
+                    });
+            boolean got = latch.await(5, java.util.concurrent.TimeUnit.SECONDS);
+            ch.basicCancel(tag);
+            Thread.sleep(200);
+            return got;
+        }
+
+        /** 手动确认模式下限定在途上限消费，返回限定时间内实收条数（用于验证 prefetch 停投）。 */
+        int consumeCount(boolean autoAck, int prefetch, long waitMs) throws Exception {
+            ch.basicQos(prefetch);
+            final java.util.concurrent.atomic.AtomicInteger n = new java.util.concurrent.atomic.AtomicInteger();
+            String tag = ch.basicConsume(queue, autoAck, "harness-cnt-" + System.currentTimeMillis(),
+                    false, false, null, new com.rabbitmq.client.DefaultConsumer(ch) {
+                        @Override
+                        public void handleDelivery(String t, com.rabbitmq.client.Envelope e,
+                                                   com.rabbitmq.client.AMQP.BasicProperties p, byte[] b) {
+                            n.incrementAndGet();
+                        }
+                    });
+            Thread.sleep(waitMs);
+            ch.basicCancel(tag);
+            Thread.sleep(200);
+            return n.get();
+        }
+
+        /** 关掉当前通道并另开一条：未确认消息由 broker 全部重投，用于确证 ack 是否生效。 */
+        void cycleChannel() throws Exception {
+            ch.close();
+            ch = c.createChannel();
+            Thread.sleep(400);
+        }
+
+        /** 即时队列深度：passive 声明取值（管理 API 有统计发布间隔，新建队列会缺字段）。 */
+        int ready() {
+            try {
+                Channel probe = c.createChannel();
+                int n = probe.queueDeclarePassive(queue).getMessageCount();
+                probe.close();
+                return n;
+            } catch (Exception e) {
+                System.out.println("[depth-warn] passive 取值失败: " + e);
+                return -1;
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+            try {
+                ch.queueDelete(queue); // 自清，不留残留
+            } catch (Exception ignored) {
+            }
+            try {
+                ch.close();
+            } catch (Exception ignored) {
+            }
+            c.close(1000);
+        }
+    }
+
+    /** 镜像 ProducerPanel 的 AUTO 档：不声明交换机，直接 mandatory 发布 + ReturnListener + 800ms 等待。 */
     private static String publishAndCheckReturn(RabbitConnection conn, String exchange, String routingKey,
                                                 java.util.Map<String, Object> headers, String body) throws Exception {
         Connection c = RabbitClient.factory(conn).newConnection();
         try {
             Channel ch = c.createChannel();
-            com.rabbitmq.client.BuiltinExchangeType type = "cr.ui.ex.headers".equals(exchange)
-                    ? com.rabbitmq.client.BuiltinExchangeType.HEADERS
-                    : com.rabbitmq.client.BuiltinExchangeType.DIRECT;
-            ch.exchangeDeclare(exchange, type, false, true, null);
             java.util.List<com.rabbitmq.client.Return> returned = new java.util.concurrent.CopyOnWriteArrayList<>();
             ch.addReturnListener(returned::add);
             com.rabbitmq.client.AMQP.BasicProperties.Builder b = new com.rabbitmq.client.AMQP.BasicProperties.Builder().deliveryMode(2);
